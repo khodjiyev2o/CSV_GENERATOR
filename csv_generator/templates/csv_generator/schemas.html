@@ -1,0 +1,32 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container">
+    <h1 class="d-flex justify-content-between">
+         Data Schemas
+        <a href="{% url 'create_schema' %}" class="btn btn-success" >New schema </a>
+      </h1>
+<table class="table">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Title</th>
+            <th>Modified</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for schema in object_list %} 
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ schema.name }}</td>
+            <td>{{ schema.updated_at|date:"Y-m-d" }}</td>
+            <td>
+                
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

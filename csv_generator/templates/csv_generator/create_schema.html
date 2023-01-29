@@ -1,0 +1,96 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container">
+<form action="" method="POST">
+  <h1 class="d-flex justify-content-between">
+    {% csrf_token %}
+    Create Data Schema
+    <input type="submit"  class="btn btn-primary" value="Submit">
+  </h1>
+  
+    <div class="form-group">
+    
+      <label for="schemaName">Name of the Data Schema</label>
+      {{ form.name }}
+    </div>
+    <div class="form-group">
+      <label for="columnSeparator">Column Separator</label>
+      {{ form.column_separator }}
+    </div>
+    <div class="form-group">
+      <label for="stringCharacter">String Character</label>
+      {{ form.string_character }}
+    </div>
+    <h2>Schema Columns</h2>
+    <div id="schemaColumnsContainer">
+      <div class="form-group row">
+        <div class="col-sm-4">
+            {{ form2.column_name }}
+        </div>
+        <div class="col-sm-4">
+            {{ form2.data_type }}
+        </div>
+        <div class="col-sm-4">
+            {{ form2.order }}
+        </div>
+      </div>
+    </div>
+    <a href="#"  type="Submit" id="addSchemaColumn"  class="btn btn-success">Add a Schema Column</a>
+  </form>
+</div>
+<script>
+    // Get the add button
+    const addButton = document.querySelector('#addSchemaColumn');
+  
+    // Create a function to add new schema columns
+    const addSchemaColumn = () => {
+      // Create a new row for the schema column
+      const newRow = document.createElement('div');
+      newRow.classList.add('form-group', 'row');
+  
+      // Create the three inputs for the new row
+      const nameInput = document.createElement('input');
+      const nameInput_div = document.createElement('div');
+      nameInput_div.classList.add('col-sm-4');
+      nameInput.type = 'text';
+      nameInput.classList.add('form-control', 'column-name');
+      nameInput.placeholder = 'Column Name';
+      nameInput_div.appendChild(nameInput)
+  
+      const typeInput = document.createElement('input');
+      const typeInput_div = document.createElement('div');
+      typeInput_div.classList.add('col-sm-4');
+      typeInput.type = 'text';
+      typeInput.classList.add('form-control',  'column-type');
+      typeInput.placeholder = 'Column Type';
+      typeInput_div.appendChild(typeInput)
+  
+      const orderInput = document.createElement('input');
+      const orderInput_div = document.createElement('div');
+      orderInput_div.classList.add('col-sm-4');
+      orderInput.type = 'number';
+      orderInput.classList.add('form-control',  'column-order');
+      orderInput.placeholder = 'Column Order';
+      orderInput_div.appendChild(orderInput)
+  
+      // Append the inputs to the new row
+      newRow.appendChild(nameInput_div);
+      newRow.appendChild(typeInput_div);
+      newRow.appendChild(orderInput_div);
+  
+      // Append the new row to the container
+      const container = document.querySelector('#schemaColumnsContainer');
+      container.appendChild(newRow);
+    };
+  
+    // Listen for a click on the add button
+    addButton.addEventListener('click', addSchemaColumn);
+  </script>
+  
+{% endblock %}
+
+
+  
+
+  
