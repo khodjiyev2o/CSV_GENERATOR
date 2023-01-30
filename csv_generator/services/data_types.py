@@ -26,3 +26,10 @@ QUOTE_CHOICES = [
         ('"', 'Double-quote (")'),
         ("'", "Single-quote (')"),
     ]
+
+
+STATUS_CHOICES = [
+    ( 'processing', ' Processing ' ),
+    ( "ready", " Ready "),
+    ( "error", "Error "),
+]

@@ -1,22 +1,21 @@
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from django.views import View
-from django.forms import BaseModelForm
-from .forms import LoginForm, SchemaColumnForm, DataSchemaForm
+from django.urls import reverse_lazy, reverse
 from django.contrib.auth.decorators import login_required
-from .models import Column, DataSchema
+from django.contrib import messages
+from .models import *
+from .forms import *
 from .services.faking import generate_fake_data
 from django.http import HttpResponse
 import csv
 from django.views.generic.list import ListView
-from django.views.generic.edit import CreateView
+from django.views.generic import DeleteView
 from django.views.generic.detail import DetailView
+from extra_views import CreateWithInlinesView, UpdateWithInlinesView
+from django.utils.decorators import method_decorator
 
 
-
-
-
+@login_required
 def generate_csv(request, range_limit: int) -> HttpResponse:
     response = HttpResponse(
         content_type='text/csv; charset=UTF-8',
@@ -33,11 +32,14 @@ def generate_csv(request, range_limit: int) -> HttpResponse:
     return response
 
 
+@method_decorator(login_required, name='dispatch')
 class DataSchemaListView(ListView):
     template_name = 'csv_generator/schemas.html'
     model = DataSchema
     queryset = DataSchema.objects.all()
 
+
+@method_decorator(login_required, name='dispatch')
 class DataSchemaDetailView(DetailView):
     # specify the model to use
     model = DataSchema
@@ -46,56 +48,76 @@ class DataSchemaDetailView(DetailView):
     def get_queryset(self):
         queryset = super(DataSchemaDetailView, self).get_queryset()
         pk = self.kwargs.get(self.pk_url_kwarg, None)
-        return queryset.filter(id=pk).prefetch_related('column_set')
-
-
-class DataSchemaCreateView(CreateView):
-    template_name = 'csv_generator/create_schema.html'
-    form_class = DataSchemaForm
-    form_class2 = SchemaColumnForm
-    queryset = DataSchema.objects.all()
-
-    def get(self, request):
-        return render(request, 'csv_generator/create_schema.html', {
-            'form': self.form_class,
-            "form2": self.form_class2
-        })
-
-    def form_valid(self, form: BaseModelForm) -> HttpResponse:
-        print(form.cleaned_data)
-        return super().form_valid(form)
+        return queryset.filter(id=pk).prefetch_related('column_set','generated_data')
     
-@login_required
-def logout_view(request):
-    logout(request)
-    return render(request,'csv_generator/logout.html')
-    
-
-class LoginView(View):
-    form_class = LoginForm
-    template_name = 'csv_generator/login.html'
-
-    def get(self, request):
-        form = self.form_class()
-        return render(request, self.template_name, {'form': form})
-
-    def post(self, request):
-        form = self.form_class(data=request.POST)
-        print(form.is_valid())
+    def post(self, request, *args, **kwargs):
+        schema = self.get_object()
+        form = GeneratedDataForm(request.POST)
+        rows = request.POST.get('rows')
+        if not rows:
+            messages.error(request, 'Please enter the number of rows',extra_tags='danger')
+            return self.get(request, *args, **kwargs)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            print(username)
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return redirect('schemas')
-                else:
-                    error = 'Your account is not active.'
-            else:
-                error = 'Invalid username or password'
+            messages.success(request, 'Data is being generated!')
+            generated_data = form.save(commit=False)
+            generated_data.data_schema = schema
+            generated_data.save()
+            return redirect(self.request.path)
+        return render(request, self.template_name, {'form': form, 'schema': schema})
+
+
+@method_decorator(login_required, name='dispatch')
+class DataSchemaCreateView(CreateWithInlinesView):
+    model = DataSchema
+    form_class = DataSchemaForm
+    inlines = [
+        SchemaColumnInline,
+    ]
+    template_name = "csv_generator/create_schema.html"
+
+
+    def get_initial(self):
+        data = {"user": self.request.user}
+        return data
+
+    def get_success_url(self):
+        if "action" in self.request.POST:
+            if self.request.POST["action"] == "submit":
+                return reverse("schemas")
+            if self.request.POST["action"] == "add_column":
+                obj = self.object
+                return reverse("schema_update", kwargs={"pk": obj.pk})
         else:
-            error = form.errors
-            print(form.errors)
-        return render(request, self.template_name, {'form': form, 'error': error})
+            return reverse("schemas")
+
+
+@method_decorator(login_required, name='dispatch')
+class SchemaUpdateView(UpdateWithInlinesView):
+    model = DataSchema
+    form_class = DataSchemaForm
+    inlines = [
+        SchemaColumnInline,
+    ]
+    template_name = "csv_generator/create_schema.html"
+
+    def get_initial(self):
+        data = {"user": self.request.user}
+        return data
+
+    def get_success_url(self):
+        if "action" in self.request.POST:
+            if self.request.POST["action"] == "submit":
+                return reverse("schemas")
+            if self.request.POST["action"] == "add_column":
+                obj = self.object
+                return reverse("schema_update", kwargs={"pk": obj.pk})
+        else:
+            return reverse("schemas")
+
+
+@method_decorator(login_required, name='dispatch')
+class SchemaDeleteView(DeleteView):
+    model = DataSchema
+    template_name = "csv_generator/delete_schema.html"
+    success_url = reverse_lazy("schemas")
+

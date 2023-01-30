@@ -2,7 +2,101 @@
 
 {% block content %}
 
-{{  object.name }}
-{{  object.created_at }}
+
+
+  <div class="container">
+    <div class="row">
+      {% if messages %}
+        <div class="container mt-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}" role="alert">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+      {% endif %}
+      <div class="col-12 align-items-center justify-content-center">
+        <h1 class="float-left">{{dataschema.name}}  Schema</h1>
+        <a href="{% url 'schema_update' dataschema.id %}" class="float-left mt-3 ml-5">Edit Schema</a>
+      </div>
+    </div>
+   
+    <div class="row">
+      <div class="col-12">
+        <table class="table ">
+          <thead>
+            <tr>
+              <th> # </th>
+              <th> Column Name </th>
+              <th>Column Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for column in dataschema.column_set.all  %}
+              <tr>
+                <td>{{ column.order }}</td>
+                <td>{{ column.column_name }}</td>
+                <td>{{ column.data_type }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+   
+    <div class="row ">
+      <div class="col-12 ">
+        <h1 class="d-inline-block">Data sets</h1>
+        <form method="POST" action="{% url 'generate_data' dataschema.id %}" class="form-inline float-right align-items-center justify-content-center">
+            {% csrf_token %}
+            <label for="rows">Rows:</label>
+            <input type="number" id="rows" class="form-control form-control-sm m-2" name="rows" placeholder="# of datasets">
+          <button class="btn btn-primary">Generate Data </button>
+        </form>
+      </div>
+    </div>
+   
+    <div class="row">
+      <div class="col-12">
+        <table class="table ">
+          <thead>
+            <tr>
+              <th> # </th>
+              <th> Created </th>
+              <th> Status </th>
+              <th> Actions </th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for dataset in dataschema.generated_data.all  %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ dataset.created_at|date:"Y-m-d" }}</td>
+                <td>
+                  {% if dataset.status == "ready" %}
+                    <span class="badge badge-success">{{ dataset.status }}</span>
+                  {% elif dataset.status == "processing" %}
+                    <span class="badge badge-secondary">{{ dataset.status }}</span>
+                  {% else %}
+                    <span class="badge badge-danger">{{ dataset.status }}</span>
+                  {% endif %}
+                </td>
+                <td>
+                  
+                  {% if dataset.status == 'ready' %}
+                    <a href={{dataset.csv_file.url}}>Download</a>
+                  {% else %}
+                    -
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  
 
 {% endblock %}

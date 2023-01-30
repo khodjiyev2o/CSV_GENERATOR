@@ -19,10 +19,11 @@
         {% for schema in object_list %} 
         <tr>
             <td>{{ forloop.counter }}</td>
-            <td>{{ schema.name }}</td>
+            <td><a href="{% url 'schema_detail' schema.id %}">{{ schema.name }}</a></td>
             <td>{{ schema.updated_at|date:"Y-m-d" }}</td>
             <td>
-                
+                <a href="{% url 'schema_update' schema.id %}" class="btn btn-primary">Edit</a>
+                <a href="{% url 'schema_delete' schema.id %}" class="btn btn-danger">Delete</a>
             </td>
         </tr>
         {% endfor %}

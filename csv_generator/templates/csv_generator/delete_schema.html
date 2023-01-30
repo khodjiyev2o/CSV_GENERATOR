@@ -1,0 +1,13 @@
+{% extends "main.html" %}
+
+{% block title %}<title>Delete schema</title>{% endblock %}
+
+{% block content %}
+  <h1>Delete schema</h1>
+  <p>Are you sure you want to delete the schema "{{ object.name }}"?</p>
+  <form action="" method="post">
+    {% csrf_token %}
+    <input type="submit" class="btn btn-danger" value="Delete">
+    <a href="{% url 'schemas' %}" class="btn btn-secondary">Cancel</a>
+  </form>
+{% endblock %}

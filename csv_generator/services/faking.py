@@ -7,19 +7,22 @@ fake = Faker()
 
 
 
-def generate_fake_data(column_names: list[str], range_limit: int = 100) -> list[ any ]:
-    data = []
-    for column_name in column_names:
-        method_name = f"{column_name.lower().replace(' ', '_')}"
-        method = getattr(fake, method_name, None)
-        if method:
-                data.append(method())
-        elif method_name == "full_name":
-                data.append(fake.name()+fake.last_name())
-        elif method_name == "age":
-                data.append(random.randint(1,range_limit))
-        else:    
-            pass
-            #handle other types of data
-    return data
+def generate_fake_data(columns: models.Model) -> list[list[ any ]]:
+        data = []
+        for column in columns:
+                method_name = f"{column.column_name.lower().replace(' ', '_')}"
+                method = getattr(fake, method_name, None)
+                if method:
+                        data.append(method())
+                elif method_name == "full_name":
+                        data.append(fake.name()+fake.last_name())
+                elif method_name == "age":
+                        if column.data_range_from and column.data_range_to:
+                                data.append(random.randint(column.data_range_from,column.data_range_to))
+                        else:
+                                data.append(random.randint(1,100))
+                else:    
+                        pass
+                        #handle other types of data
+        return data
 
