@@ -1,0 +1,74 @@
+name: Planeks CI/CD
+
+on:
+  push:
+      branches: [main]
+env:
+    DOCKER_IMAGE: ghcr.io/${{ secrets.ACTOR }}/planeks
+    VERSION: ${{ github.sha }}
+    NAME: planeks
+jobs:
+  testing:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.8]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v3
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install Dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    - name: 'Create env file'
+      run: |
+          echo "${{ secrets.ENV_FILE }}" >> .env
+    - name: Run Tests
+      run: |
+        python manage.py test
+  build:
+      needs: testing
+      runs-on: ubuntu-latest
+      steps:
+        # github repository checkout
+        - uses: actions/checkout@v2
+        - name: 'Create env file'
+          run: |
+            echo "${{ secrets.ENV_FILE }}" >> .env
+        # docker build 
+        - name: docker login
+          run: |
+            docker login -u ${{ secrets.ACTOR }} -p ${{secrets.DOCKER_PASSWORD}}
+        - name: Build the Docker image for main branch
+          run: docker build . --file Dockerfile --tag ${{ secrets.ACTOR }}/planeks:latest
+       
+      
+        - name: Docker Push for main branch
+          run: docker push ${{ secrets.ACTOR }}/planeks:latest
+       
+
+    #  Job
+  deploy:
+      needs: build 
+      name: Deploy
+      runs-on: ${{ github.ref }} # AWS ./configure
+      steps:
+          - name: Login to ghcr
+            uses: docker/login-action@v1
+            with:
+              registry: ghcr.io
+              username: ${{ secrets.ACTOR }}
+              password: ${{ secrets.GHCR_TOKEN }}
+          # 8000 -> 80 
+          - name: Docker run in main branch
+            if: ${{ github.ref == 'refs/heads/main' }}
+            run: |
+              docker stop ${{ env.NAME }} && docker rm ${{ env.NAME }} && docker rmi ${{ secrets.ACTOR }}/planeks:latest
+              docker run -d -t -i \
+              -p 80:8000 \
+              --name ${{ env.NAME }} ${{ secrets.ACTOR }}/planeks:latest
+              docker exec ${{ env.NAME }} celery -A config worker -l info 

@@ -1,7 +1,7 @@
 {% extends "main.html" %}
 {% load crispy_forms_tags %}
 {% load crispy_forms_filters %}
-{% block title %}<title>{{ object|yesno:"Update,Add" }} schema</title>{% endblock %}
+{% block title %}{{ object|yesno:"Update,Add" }} schema{% endblock %}
 
 {% block content %}
 

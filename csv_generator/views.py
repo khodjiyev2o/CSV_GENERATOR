@@ -7,7 +7,6 @@ from .models import *
 from .forms import *
 from .services.faking import generate_fake_data
 from django.http import HttpResponse
-import csv
 from django.views.generic.list import ListView
 from django.views.generic import DeleteView
 from django.views.generic.detail import DetailView
@@ -21,14 +20,6 @@ def generate_csv(request, range_limit: int) -> HttpResponse:
         content_type='text/csv; charset=UTF-8',
         headers={'Content-Disposition': 'attachment; filename="data.csv"'},
     )
-    writer = csv.writer(response,delimiter=',')
-    data_schema = DataSchema.objects.prefetch_related('column_set').get(id=2)
-    column_names = [column.name for column in data_schema.column_set.all()]
-    ## add column headings to the csv
-    writer.writerow(column_names)
-    for i in range(50):
-            fake_data = generate_fake_data(column_names=column_names,range_limit=range_limit)
-            writer.writerow(fake_data)
     return response
 
 
@@ -41,7 +32,6 @@ class DataSchemaListView(ListView):
 
 @method_decorator(login_required, name='dispatch')
 class DataSchemaDetailView(DetailView):
-    # specify the model to use
     model = DataSchema
     template_name = 'csv_generator/detail_schema.html'
 
@@ -58,7 +48,7 @@ class DataSchemaDetailView(DetailView):
             messages.error(request, 'Please enter the number of rows',extra_tags='danger')
             return self.get(request, *args, **kwargs)
         if form.is_valid():
-            messages.success(request, 'Data is being generated!')
+            messages.success(request, 'Data is being generated, please refresh the page !')
             generated_data = form.save(commit=False)
             generated_data.data_schema = schema
             generated_data.save()

@@ -1,13 +1,13 @@
 from faker import Faker
 from django.db import models
-from typing import Dict
+from typing import Dict, List
 import random
 from django.http import HttpResponse
 fake = Faker()
 
 
 
-def generate_fake_data(columns: models.Model) -> list[list[ any ]]:
+def generate_fake_data(columns: models.Model) -> List[List[ any ]]:
         data = []
         for column in columns:
                 method_name = f"{column.column_name.lower().replace(' ', '_')}"
