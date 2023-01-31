@@ -62,7 +62,13 @@ docker run --rm -it --mount src="$(pwd)",target=/usr/src/app,type=bind -dp 8000:
 
 ```
 
-7. Open your browser and paste one of the urls :
+7. Run celery for background tasks :
+```
+docker exec csv_generator celery -A config worker -l info 
+
+```
+
+8. Open your browser and paste one of the urls :
 
 * http://127.0.0.1:80
 * http://localhost:80
