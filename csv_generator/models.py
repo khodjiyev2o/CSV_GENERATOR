@@ -27,7 +27,7 @@ class DataSchema(BaseModel):
         return str(self.name)
 
     def get_absolute_url(self):
-        return reverse('schema-detail', kwargs={'pk': self.pk})
+        return reverse('schema_detail', kwargs={'pk': self.pk})
 
 
 class Column(BaseModel):
