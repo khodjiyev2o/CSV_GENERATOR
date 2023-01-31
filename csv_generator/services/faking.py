@@ -10,7 +10,7 @@ fake = Faker()
 def generate_fake_data(columns: models.Model) -> List[List[ any ]]:
         data = []
         for column in columns:
-                method_name = f"{column.column_name.lower().replace(' ', '_')}"
+                method_name = f"{column.data_type.lower().replace(' ', '_')}"
                 method = getattr(fake, method_name, None)
                 if method:
                         data.append(method())
