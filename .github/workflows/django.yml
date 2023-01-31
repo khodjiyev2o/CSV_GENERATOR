@@ -70,4 +70,4 @@ jobs:
               docker run -d -t -i \
               -p 80:8000 \
               --name ${{ env.NAME }} ${{ github.actor }}/planeks:latest
-              docker exec ${{ env.NAME }} celery -A config worker -l info 
+              docker exec ${{ env.NAME }} celery -A config worker -l info -D
