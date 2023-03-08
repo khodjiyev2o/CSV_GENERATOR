@@ -3,7 +3,7 @@ Online service for generating CSV files with fake (dummy) data using
 Python and Django:
 
 
-Visit the [Deployed Version](http://54.180.202.8/) 
+Visit the [Deployed Version](http://13.114.193.241/) 
 
 ## Getting Started
 
