@@ -26,10 +26,8 @@ class LoginView(View):
 
     def post(self, request):
         form = self.form_class(data=request.POST)
-        print(form.is_valid())
         if form.is_valid():
             username = form.cleaned_data.get('username')
-            print(username)
             password = form.cleaned_data.get('password')
             user = authenticate(username=username, password=password)
             if user is not None:
@@ -42,5 +40,4 @@ class LoginView(View):
                 error = 'Invalid username or password'
         else:
             error = form.errors
-            print(form.error_messages)
         return render(request, self.template_name, {'form': form, 'error': error})

@@ -1,7 +1,8 @@
 *.pyc
 *.mp4
 *.mp3
-
+db.sqlite3
+media/*
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

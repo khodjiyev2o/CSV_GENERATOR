@@ -30,11 +30,9 @@ def generate_csv_task(
             writer.writerow([column for column in column_names])
             for _ in range(instance.rows):
                 fake_data = faking.generate_fake_data(columns=columns)
-                print("fake data is generated! :", fake_data)
                 writer.writerow([data for data in fake_data])
 
         response = uploading.upload_to_s3(filepath, filename)
-        print(filename)
         if response:
             try:
                 instance.csv_file = filename
